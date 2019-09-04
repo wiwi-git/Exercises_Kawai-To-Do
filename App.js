@@ -7,7 +7,8 @@ import {
   TextInput,
   Dimensions,
   Platform,
-  ScrollView
+  ScrollView,
+  AsyncStorage
 } from 'react-native';
 import { AppLoading } from "expo";
 import ToDo from "./ToDo";
@@ -25,8 +26,7 @@ export default class extends React.Component {
   };
 
   render() {
-    const { newToDo, loadedToDos, toDos } = this.state;
-    console.log(toDos);
+    const { newToDo, loadedToDos, toDos} = this.state;
     if (!loadedToDos) {
       return <AppLoading />;
     }
@@ -44,23 +44,33 @@ export default class extends React.Component {
             autoCorrect={false}
             onSubmitEditing={this._addToDo} />
           <ScrollView contentContainerStyle={styles.toDos}>
-            {Object.values(toDos).map( toDos =>
-              <ToDo key={toDos.id} {...toDos} deleteToDo={this._deleteToDo}/>
+            {Object.values(toDos).reverse().map( toDos =>
+              <ToDo 
+              key={toDos.id} 
+              {...toDos} 
+              deleteToDo={this._deleteToDo}
+              uncompleteToDo={this._uncompleteToDo}
+              completeToDo={this._completeToDo}
+              updateToDo={this._updateToDo}/>
             )}
           </ScrollView>
         </View>
       </View>
     );//return
   }//render
-  _controllNewToDo = text => {
+  _controllNewToDo = text => { 
     this.setState({
       newToDo: text
     });
   };
-  _loadToDos = () => {
-    this.setState({
-      loadedToDos: true
-    });
+  _loadToDos = async () => {
+    try {
+      const toDos = await AsyncStorage.getItem("toDos");
+      const parsedToDos = JSON.parse(toDos)
+      this.setState({ loadedToDos: true, toDos: parsedToDos});
+    } catch (error) {
+      console.log(error);
+    }
   }
   _addToDo = () => {
     const { newToDo } = this.state;
@@ -83,6 +93,7 @@ export default class extends React.Component {
             ...newToDoObject
           },
         };
+        this._saveToDo(newState.toDos);
         return {...newState};
       });
     }//if not empty
@@ -95,9 +106,61 @@ export default class extends React.Component {
         ...prevState,
         ...toDos
       };
+      this._saveToDo(newState.toDos);
       return {...newState}
     });
   };//deleteToDo
+  _uncompleteToDo = (id) => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        toDos:{
+          ...prevState.toDos,
+          [id]:{
+            ...prevState.toDos[id],
+            isCompleted: false
+          }
+        }
+      };
+      this._saveToDo(newState.toDos);
+      return {...newState};
+    });
+  };//uncompleteToDo
+  _completeToDo = (id) => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        toDos:{
+          ...prevState.toDos,
+          [id]:{
+            ...prevState.toDos[id],
+            isCompleted: true
+          }
+        }
+      };
+      this._saveToDo(newState.toDos);
+      return {...newState};
+    });
+  };//completeToDo
+  _updateToDo = (id,text) => {
+    this.setState(prevState => {
+      const newState = {
+        ...prevState,
+        toDos:{
+          ...prevState.toDos,
+          [id]:{
+            ...prevState.toDos[id],
+            text: text
+          }
+        }
+      };
+      this._saveToDo(newState.toDos);
+      return {...newState};
+    });
+  }//updateToDo
+  _saveToDo = (newToDo) => {
+    const saveToDo = AsyncStorage.setItem("toDos",JSON.stringify(newToDo))
+  }
 }
 
 const styles = StyleSheet.create({
