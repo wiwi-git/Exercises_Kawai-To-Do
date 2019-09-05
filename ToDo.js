@@ -33,19 +33,22 @@ export default class ToDo extends Component {
             <View style={ styles.container }>
                 <View style={styles.column}>
                     <TouchableOpacity onPress={this._toggleComplete}>
-                        <View style={[styles.circle, isCompleted ? styles.completeCircle:styles.uncompleteCircle]}>
-                        </View>
+                        <View style={[styles.circle, isCompleted ? styles.completeCircle:styles.uncompleteCircle]}/>
                     </TouchableOpacity>
                     {isEditing ? (
                     <TextInput 
+                    style={[
+                        styles.text, 
+                        styles.input, 
+                        isCompleted ? styles.completeText:styles.uncompleteText
+                    ]} 
                     value={toDoValue} 
-                    style={[styles.text, styles.input, isCompleted ? styles.completeText:styles.uncompleteText]} 
                     multiline={true}
                     onChangeText={this._controllInput}
                     returnKeyType={"done"}
-                    onBlur={this._endEditting}>
-
-                    </TextInput>
+                    onBlur={this._endEditting}
+                    underlineColorAndroid={"transparent"}
+                    />
                     ):(
                     <Text style={[styles.text, isCompleted ? styles.completeText:styles.uncompleteText]}>
                         {text}
@@ -67,7 +70,10 @@ export default class ToDo extends Component {
                                     <Text style={styles.actionText}>✏️</Text>
                                 </View>
                             </TouchableOpacity>
-                            <TouchableOpacity onPressOut={ () => deleteToDo(id)}>
+                            <TouchableOpacity onPressOut={ (event) => {
+                                event.stopPropagation();
+                                deleteToDo(id);
+                                }}>
                                 <View style={styles.actionContainer}>
                                     <Text style={styles.actionText}>❌</Text>
                                 </View>
@@ -77,7 +83,8 @@ export default class ToDo extends Component {
                 </View>
         );
     }
-    _toggleComplete = () => {
+    _toggleComplete = (event) => {
+        event.stopPropagation();
         const { isCompleted, completeToDo, uncompleteToDo, id} = this.props
         if(isCompleted) {
             uncompleteToDo(id)
@@ -85,12 +92,14 @@ export default class ToDo extends Component {
             completeToDo(id)
         }
     };
-    _startEditing = () => {
+    _startEditing = (event) => {
+        event.stopPropagation();
         this.setState({
             isEditing: true,
         });
     }
-    _endEditting = () => {
+    _endEditting = (event ) => {
+        event.stopPropagation();
         const{toDoValue} = this.state;
         const{id, updateToDo} = this.props;
         updateToDo(id,toDoValue);
@@ -154,6 +163,6 @@ const styles = StyleSheet.create({
     input:{
         width: width / 2,
         marginVertical: 15,
-        paddingBottom: 5,
+        paddingBottom: 5
     }
-})
+});

@@ -35,23 +35,27 @@ export default class extends React.Component {
         <StatusBar barStyle="light-content" />
         <Text style={styles.title}>Kawai To Do</Text>
         <View style={styles.card}>
-          <TextInput style={styles.input}
-            value={newToDo}
+          <TextInput 
+            style={styles.input}
             placeholder={"New To Do"}
-            placeholderTextColor={"#999"}
+            value={newToDo}
             onChangeText={this._controllNewToDo}
+            placeholderTextColor={"#999"}
             returnKeyType={"done"}
             autoCorrect={false}
-            onSubmitEditing={this._addToDo} />
+            onSubmitEditing={this._addToDo}
+            underlineColorAndroid={"transparent"}
+             />
           <ScrollView contentContainerStyle={styles.toDos}>
             {Object.values(toDos).reverse().map( toDos =>
               <ToDo 
               key={toDos.id} 
-              {...toDos} 
               deleteToDo={this._deleteToDo}
               uncompleteToDo={this._uncompleteToDo}
               completeToDo={this._completeToDo}
-              updateToDo={this._updateToDo}/>
+              updateToDo={this._updateToDo}
+              {...toDos} 
+              />
             )}
           </ScrollView>
         </View>
@@ -67,11 +71,11 @@ export default class extends React.Component {
     try {
       const toDos = await AsyncStorage.getItem("toDos");
       const parsedToDos = JSON.parse(toDos)
-      this.setState({ loadedToDos: true, toDos: parsedToDos});
+      this.setState({ loadedToDos: true, toDos: parsedToDos || {} });
     } catch (error) {
       console.log(error);
     }
-  }
+  };
   _addToDo = () => {
     const { newToDo } = this.state;
     if (newToDo !== "") {
@@ -166,15 +170,15 @@ export default class extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f23657',
-    alignItems: 'center',
-    //justifyContent: 'center',
+    backgroundColor: "#F23657",
+    alignItems: "center"
   },
   title: {
     color: "white",
     fontSize: 30,
     marginTop: 50,
-    fontWeight: "200"
+    fontWeight: "200",
+    marginBottom: 30
   },
   card: {
     backgroundColor: "white",
@@ -184,7 +188,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     ...Platform.select({
       ios: {
-        shadowColor: "rgb(50,50,50)",
+        shadowColor: "rgb(50, 50, 50)",
         shadowOpacity: 0.5,
         shadowRadius: 5,
         shadowOffset: {
@@ -196,12 +200,12 @@ const styles = StyleSheet.create({
         elevation: 3
       }
     })
-  },//card
+  },
   input: {
     padding: 20,
-    fontSize: 25,
-    borderBottomWidth: 1,
     borderBottomColor: "#bbb",
+    borderBottomWidth: 1,
+    fontSize: 25
   },
   toDos: {
     alignItems: "center"
